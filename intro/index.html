@@ -17,7 +17,9 @@
 </head>
 <body>
     <canvas id="canvas"></canvas>
-    <script>
+    <script type="module">
+        import { Color } from "https://unpkg.com/three/build/three.module.js";
+
         const canvas = document.querySelector("#canvas")
         // * canvas 只能通过 属性设置
         canvas.width = window.innerWidth
@@ -29,24 +31,21 @@
         // 刷底色
         gl.clear(gl.COLOR_BUFFER_BIT)
 
-        // 假设rgba颜色
-        const rgbaCss = 'rgba(255,0,0,1)'
-        // z正则
-        const reg = /\((.*)\)/
+        // 建立color对象 three js color 类
+        const color = new Color('rgba(255,0,0,1)')
 
-        const rgbaStr = reg.exec(rgbaCss)[1]
-
-        // 加工数据
-        const rgba =  rgbaStr.split(',').map(n=>parseInt(n))
-
-        const r = rgba[0]/255
-        const g = rgba[1]/255
-        const b = rgba[2]/255
-
-        const a = rgba[3]
-
-        gl.clearColor(r,g,b,a)
+        gl.clearColor(color.r,color.g,color.b,1)
         gl.clear(gl.COLOR_BUFFER_BIT)
+
+        // 立即执行
+        !(function ani() {
+            // 颜色值不断变化
+            color.offsetHSL(0.005,0,0)
+            gl.clearColor(color.r,color.g,color.b,1)
+            gl.clear(gl.COLOR_BUFFER_BIT)
+
+            requestAnimationFrame(ani)
+        })()    
     </script>
 </body>
 </html>
