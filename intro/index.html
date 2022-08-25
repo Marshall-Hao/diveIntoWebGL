@@ -17,35 +17,49 @@
 </head>
 <body>
     <canvas id="canvas"></canvas>
+    <!-- 顶点着色器 -->
+    <script id="vertexShader" type="x-shader/x-vertex">
+        void main() {
+         // 点位 确保是float
+         //x,y,z 
+         gl_Position = vec4(0.5, 0.5, 0.0, 1.0);
+         gl_PointSize = 100.0;
+        }
+    </script>
+    <!-- 片元着色器 -->
+    <script id="fragmentShader" type="x-shader/x-fragment">
+        void main() {
+            gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+        }
+    </script>
+
     <script type="module">
         import { Color } from "https://unpkg.com/three/build/three.module.js";
-
+        import {initShaders,loadShader} from '../utils/utils.js'
         const canvas = document.querySelector("#canvas")
         // * canvas 只能通过 属性设置
         canvas.width = window.innerWidth
         canvas.height = window.innerHeight
+
+        // * 获取着色器
+        const vsSource = document.querySelector('#vertexShader').innerText
+        const fsSource = document.querySelector('#fragmentShader').innerText
+        
         //  三维画笔
         const gl = canvas.getContext('webgl')
+        // 初始化着色器
+        // 解析着色器文本，整合到程序对象，关联webgl上下文对象，实现两种语言的相互通信
+        initShaders(gl,vsSource,fsSource)
 
-        gl.clearColor(0,0.2,0,1)
+        gl.clearColor(0,0,0,1)
         // 刷底色
         gl.clear(gl.COLOR_BUFFER_BIT)
 
-        // 建立color对象 three js color 类
-        const color = new Color('rgba(255,0,0,1)')
+        
+        // 绘制顶点
+        gl.drawArrays(gl.POINTS,0,1)
 
-        gl.clearColor(color.r,color.g,color.b,1)
-        gl.clear(gl.COLOR_BUFFER_BIT)
-
-        // 立即执行
-        !(function ani() {
-            // 颜色值不断变化
-            color.offsetHSL(0.005,0,0)
-            gl.clearColor(color.r,color.g,color.b,1)
-            gl.clear(gl.COLOR_BUFFER_BIT)
-
-            requestAnimationFrame(ani)
-        })()    
+    
     </script>
 </body>
 </html>
