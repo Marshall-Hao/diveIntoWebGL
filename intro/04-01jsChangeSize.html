@@ -21,11 +21,12 @@
     <script id="vertexShader" type="x-shader/x-vertex">
         // attribute 相当于 export
         attribute vec4 a_Position;
+        attribute float a_PointSize;
         void main() {
          // 点位 确保是float
          // a_Position 就是一个变量 
          gl_Position = a_Position;
-         gl_PointSize = 50.0;
+         gl_PointSize = a_PointSize;
         }
     </script>
     <!-- 片元着色器 -->
@@ -55,54 +56,20 @@
 
         // 设置attribue a_Position 变量 上下文对象 getAttribLocation获取export出的变量名
         const a_Position=gl.getAttribLocation(gl.program,'a_Position');
-
-
-        const a_points = []
+        const a_PointSize =gl.getAttribLocation(gl.program,'a_PointSize')
+        // 给a_Position 赋值   three float 可以是 b1f b2f 
+        gl.vertexAttrib3f(a_Position,0.0,0.5,0.0)
+        gl.vertexAttrib1f(a_PointSize,20)
         
         gl.clearColor(0,0,0,1)
         // 刷底色
         gl.clear(gl.COLOR_BUFFER_BIT)
 
-        // 鼠标点击
-        canvas.addEventListener("click",({clientX,clientY}) => {
-            // 长方形左上顶点
-            const {left,top,width,height} = canvas.getBoundingClientRect()
-            const [cssX,cssY] = [
-                clientX - left,
-                clientY - top
-            ]
+        
+        // 绘制顶点
+        gl.drawArrays(gl.POINTS,0,1)
 
-            const [halfWidth,halfHeight] = [width/2,height/2]
-            // 视频向量差
-            const [xBaseCenter,yBaseCenter] = [
-                cssX - halfWidth,
-                cssY - halfHeight
-            ]
-
-            // 解决y方向差异 webgl是反的
-            const yBaseCenterTop = -yBaseCenter
-
-            // 转换为webgl坐标
-            const [x,y] = [
-                xBaseCenter / halfWidth,
-                yBaseCenterTop / halfHeight
-            ]
-
-            // 都在一个callback 的 线程里了
-            a_points.push({x,y})
-            render()
-
-        })
-
-        function render() {
-            // 这是处在一个线程的同步
-            gl.clear(gl.COLOR_BUFFER_BIT)
-            a_points.forEach(({x,y}) => {
-                gl.vertexAttrib2f(a_Position,x,y)
-                gl.drawArrays(gl.POINTS,0,1)
-            })
-        }
-
+    
     </script>
 </body>
 </html>

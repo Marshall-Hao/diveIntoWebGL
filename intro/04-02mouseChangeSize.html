@@ -21,11 +21,12 @@
     <script id="vertexShader" type="x-shader/x-vertex">
         // attribute 相当于 export
         attribute vec4 a_Position;
+        attribute float a_PointSize;
         void main() {
          // 点位 确保是float
          // a_Position 就是一个变量 
          gl_Position = a_Position;
-         gl_PointSize = 50.0;
+         gl_PointSize=a_PointSize;
         }
     </script>
     <!-- 片元着色器 -->
@@ -55,7 +56,7 @@
 
         // 设置attribue a_Position 变量 上下文对象 getAttribLocation获取export出的变量名
         const a_Position=gl.getAttribLocation(gl.program,'a_Position');
-
+        const a_PointSize =gl.getAttribLocation(gl.program,'a_PointSize')
 
         const a_points = []
         
@@ -88,8 +89,10 @@
                 yBaseCenterTop / halfHeight
             ]
 
+            // 产生随机size
+            const size = Math.random()*100 + 10
             // 都在一个callback 的 线程里了
-            a_points.push({x,y})
+            a_points.push({x,y,size})
             render()
 
         })
@@ -97,8 +100,9 @@
         function render() {
             // 这是处在一个线程的同步
             gl.clear(gl.COLOR_BUFFER_BIT)
-            a_points.forEach(({x,y}) => {
+            a_points.forEach(({x,y,size}) => {
                 gl.vertexAttrib2f(a_Position,x,y)
+                gl.vertexAttrib1f(a_PointSize,size)
                 gl.drawArrays(gl.POINTS,0,1)
             })
         }
