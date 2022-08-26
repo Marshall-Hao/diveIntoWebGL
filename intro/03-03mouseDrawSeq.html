@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        #canvas {
+            background-color: antiquewhite;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <!-- 顶点着色器 -->
+    <script id="vertexShader" type="x-shader/x-vertex">
+        // attribute 相当于 export
+        attribute vec4 a_Position;
+        void main() {
+         // 点位 确保是float
+         // a_Position 就是一个变量 
+         gl_Position = a_Position;
+         gl_PointSize = 50.0;
+        }
+    </script>
+    <!-- 片元着色器 -->
+    <script id="fragmentShader" type="x-shader/x-fragment">
+        void main() {
+            gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+        }
+    </script>
+
+    <script type="module">
+        import { Color } from "https://unpkg.com/three/build/three.module.js";
+        import {initShaders,loadShader} from '../utils/utils.js'
+        const canvas = document.querySelector("#canvas")
+        // * canvas 只能通过 属性设置
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+
+        // * 获取着色器
+        const vsSource = document.querySelector('#vertexShader').innerText
+        const fsSource = document.querySelector('#fragmentShader').innerText
+        
+        //  三维画笔
+        const gl = canvas.getContext('webgl')
+        // 初始化着色器
+        // 解析着色器文本，整合到程序对象，关联webgl上下文对象，实现两种语言的相互通信
+        initShaders(gl,vsSource,fsSource)
+
+        // 设置attribue a_Position 变量 上下文对象 getAttribLocation获取export出的变量名
+        const a_Position=gl.getAttribLocation(gl.program,'a_Position');
+
+
+        const a_points = []
+        
+        gl.clearColor(0,0,0,1)
+        // 刷底色
+        gl.clear(gl.COLOR_BUFFER_BIT)
+
+        // 鼠标点击
+        canvas.addEventListener("click",({clientX,clientY}) => {
+            // 长方形左上顶点
+            const {left,top,width,height} = canvas.getBoundingClientRect()
+            const [cssX,cssY] = [
+                clientX - left,
+                clientY - top
+            ]
+
+            const [halfWidth,halfHeight] = [width/2,height/2]
+            // 视频向量差
+            const [xBaseCenter,yBaseCenter] = [
+                cssX - halfWidth,
+                cssY - halfHeight
+            ]
+
+            // 解决y方向差异 webgl是反的
+            const yBaseCenterTop = -yBaseCenter
+
+            // 转换为webgl坐标
+            const [x,y] = [
+                xBaseCenter / halfWidth,
+                yBaseCenterTop / halfHeight
+            ]
+
+            a_points.push({x,y})
+            render()
+
+        })
+
+        function render() {
+            // 这是处在一个进程的同步
+            gl.clear(gl.COLOR_BUFFER_BIT)
+            a_points.forEach(({x,y}) => {
+                gl.vertexAttrib2f(a_Position,x,y)
+                gl.drawArrays(gl.POINTS,0,1)
+            })
+        }
+
+    </script>
+</body>
+</html>
