@@ -35,3 +35,31 @@ export function loadShader(gl, type, source) {
   //返回着色器对象
   return shader;
 }
+
+export function getMousePosInWebgl(event, canvas) {
+  const { clientX, clientY } = event;
+  const { left, top, width, height } =
+    canvas.getBoundingClientRect();
+  const [cssX, cssY] = [clientX - left, clientY - top];
+
+  const [halfWidth, halfHeight] = [width / 2, height / 2];
+  // 视频向量差
+  const [xBaseCenter, yBaseCenter] = [
+    cssX - halfWidth,
+    cssY - halfHeight,
+  ];
+
+  // 解决y方向差异 webgl是反的
+  const yBaseCenterTop = -yBaseCenter;
+
+  // 转换为webgl坐标
+  const [x, y] = [
+    xBaseCenter / halfWidth,
+    yBaseCenterTop / halfHeight,
+  ];
+
+  return {
+    x,
+    y,
+  };
+}
