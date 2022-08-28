@@ -63,3 +63,11 @@ export function getMousePosInWebgl(event, canvas) {
     y,
   };
 }
+
+export function glToCssPos({ x, y }, { width, height }) {
+  const [halfWidth, halfHeight] = [width / 2, height / 2];
+  return {
+    x: x * halfWidth,
+    y: -y * halfHeight,
+  };
+}

@@ -27,7 +27,7 @@ export default class Poly {
       gl.program,
       attrName
     );
-    // size 是 数组中 几个为一个 组合 分配给顶点的位置
+    // vertexAttribPointer将缓冲区对象分配给attribute 变量   size 是 数组中 几个为一个 组合 分配给顶点的位置
     gl.vertexAttribPointer(
       a_Position,
       size,
