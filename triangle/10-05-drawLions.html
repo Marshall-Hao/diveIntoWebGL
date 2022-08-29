@@ -37,10 +37,20 @@
     <script id="fragmentShader" type="x-shader/x-fragment">
          // 一定要囊括 浮点值精确范围
          precision mediump float;
+         uniform bool u_IsPOINTS;
          // 接受这个变量
          varying float v_Alpha;
          void main() {
-                gl_FragColor = vec4(0.87, 0.91, 1.0, v_Alpha);
+            if(u_IsPOINTS){
+                float dist=distance(gl_PointCoord,vec2(0.5,0.5));
+                if(dist<0.5){
+                    gl_FragColor=vec4(1,1,0,1);
+                }else{
+                    discard;
+                }
+            }else{
+                gl_FragColor=vec4(1,1,0,1);
+            }
           
          }
     </script>
@@ -144,6 +154,7 @@
             let o1 = point?point:{x,y,pointSize:random(),alpha:1}
             const o2 = {x,y,pointSize:random(),alpha:1}
             poly=new Poly({
+                circleDot: true,
                 size:4,
                 attrName:'a_Attr',
                 geoData:[o1,o2],

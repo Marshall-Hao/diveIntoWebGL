@@ -1,5 +1,7 @@
 // 将数据放到一个方法里 可以防止被引用的时候误修改
 const defAttr = () => ({
+  circleDot: false,
+  u_IsPOINTS: null,
   gl: null,
   vertices: [],
   geoData: [],
@@ -16,7 +18,7 @@ export default class Poly {
   }
 
   init() {
-    const { attrName, size, gl } = this;
+    const { circleDot, attrName, size, gl } = this;
     if (!gl) {
       return;
     }
@@ -37,6 +39,13 @@ export default class Poly {
       0
     );
     gl.enableVertexAttribArray(a_Position);
+
+    if (circleDot) {
+      this.u_IsPOINTS = gl.getUniformLocation(
+        gl.program,
+        "u_IsPOINTS"
+      );
+    }
   }
 
   updateBuffer() {
@@ -81,8 +90,11 @@ export default class Poly {
     this.vertices = vertices;
   }
   draw(types = this.types) {
-    const { gl, count } = this;
+    const { circleDot, gl, count, u_IsPOINTS } = this;
     for (let type of types) {
+      // * 点就 画圆 线就正常画
+      circleDot &&
+        gl.uniform1f(u_IsPOINTS, type === "POINTS");
       gl.drawArrays(gl[type], 0, count);
     }
   }
