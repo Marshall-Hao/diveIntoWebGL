@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        #canvas {
+            background-color: antiquewhite;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <!-- 顶点着色器 -->
+    <script id="vertexShader" type="x-shader/x-vertex">
+        // attribute 相当于 export 且只跟顶点直接相关
+        attribute vec4 a_Position;
+        float angle=radians(30.0);
+        float sinB=sin(angle);
+        float cosB=cos(angle);
+        // 列主序 要 row column 变换下
+        mat4 m4 = mat4(
+            cosB, sinB,0.0,0.0,
+            -sinB,cosB,0.0,0.0,
+            0.0,  0.0, 1.0,0.0,
+            0.0,  0.0, 0.0,1.0
+        );
+        void main() {
+         // 点位 确保是float
+         // a_Position 就是一个变量 
+         gl_Position = m4*a_Position;
+         //gl_PointSize = 50.0;
+        }
+    </script>
+    <!-- 片元着色器 -->
+    <script id="fragmentShader" type="x-shader/x-fragment">
+        void main() {
+            gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+        }
+    </script>
+
+    <script type="module">
+        import { Color } from "https://unpkg.com/three/build/three.module.js";
+        import {initShaders,loadShader} from '../utils/utils.js'
+        const canvas = document.querySelector("#canvas")
+        // * canvas 只能通过 属性设置
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+
+        // * 获取着色器
+        const vsSource = document.querySelector('#vertexShader').innerText
+        const fsSource = document.querySelector('#fragmentShader').innerText
+        
+        //  三维画笔
+        const gl = canvas.getContext('webgl')
+        // 初始化着色器
+        // 解析着色器文本，整合到程序对象，关联webgl上下文对象，实现两种语言的相互通信
+        initShaders(gl,vsSource,fsSource)
+
+        // 像一个attribute绘入多点
+        const vertices = new Float32Array([
+            0,0.1,
+            -0.1,-0.1,
+            0.1,-0.1
+        ])
+
+
+        // 建立buffer 缓存对象
+        const vertexBuffer = gl.createBuffer()
+        // 绑定缓存对象 存储在哪个位置 真正要存储的buffer对象
+        gl.bindBuffer(gl.ARRAY_BUFFER,vertexBuffer)
+        // buffer写入数据                       写入方式
+        gl.bufferData(gl.ARRAY_BUFFER,vertices,gl.STATIC_DRAW)
+
+        // 获取attribute变量
+        const a_Position = gl.getAttribLocation(gl.program, 'a_Position')
+
+        // 修改attribute变量
+        gl.vertexAttribPointer(a_Position,2,gl.FLOAT,false,0,0)
+
+        // 开启顶点 批处理功能
+        gl.enableVertexAttribArray(a_Position)
+
+        gl.clearColor(0,0,0,1)
+        // 刷底色
+        gl.clear(gl.COLOR_BUFFER_BIT)
+
+        
+        // 绘制三角形
+        // gl.drawArrays(gl.TRIANGLES,0,6)
+        // 绘制三角带
+        gl.drawArrays(gl.TRIANGLE_STRIP,0,3)
+    
+    </script>
+</body>
+</html>
