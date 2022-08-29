@@ -22,11 +22,16 @@
         // attribute 相当于 export 且只跟顶点直接相关
         attribute vec4 a_Position;
         // 
-        vec4 translation = vec4(0,0.2,0,0);
+        float scale = 2.0;
         void main() {
          // 点位 确保是float
          // a_Position 就是一个变量 
-         gl_Position = a_Position + translation;
+         //gl_Position.x= a_Position.x*scale;
+         //gl_Position.y= a_Position.y*scale;
+         //gl_Position.z= a_Position.z*scale;
+         //gl_Position.w=1.0;
+         //另外一种合并写法
+         gl_Position=vec4(vec3(a_Position)*scale,1.0);
          //gl_PointSize = 50.0;
         }
     </script>

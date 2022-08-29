@@ -22,11 +22,16 @@
         // attribute 相当于 export 且只跟顶点直接相关
         attribute vec4 a_Position;
         // 
-        vec4 translation = vec4(0,0.2,0,0);
+        uniform float u_Scale;
         void main() {
          // 点位 确保是float
          // a_Position 就是一个变量 
-         gl_Position = a_Position + translation;
+         //gl_Position.x= a_Position.x*scale;
+         //gl_Position.y= a_Position.y*scale;
+         //gl_Position.z= a_Position.z*scale;
+         //gl_Position.w=1.0;
+         //另外一种合并写法
+         gl_Position=vec4(vec3(a_Position)*u_Scale,1.0);
          //gl_PointSize = 50.0;
         }
     </script>
@@ -79,16 +84,24 @@
         // 开启顶点 批处理功能
         gl.enableVertexAttribArray(a_Position)
 
+        const u_Scale = gl.getUniformLocation(gl.program, 'u_Scale')
+        gl.uniform1f(u_Scale, 3.0)
         gl.clearColor(0,0,0,1)
         // 刷底色
         gl.clear(gl.COLOR_BUFFER_BIT)
 
         
         // 绘制三角形
-        // gl.drawArrays(gl.TRIANGLES,0,6)
-        // 绘制三角带
         gl.drawArrays(gl.TRIANGLE_STRIP,0,3)
-    
+        let angle = 0
+        !(function ani() {
+            angle += 0.01
+            const scale = Math.sin(angle) + 1
+            gl.uniform1f(u_Scale, scale)
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
+            requestAnimationFrame(ani)
+        })()
     </script>
 </body>
 </html>
