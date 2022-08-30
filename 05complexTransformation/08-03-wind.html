@@ -60,7 +60,7 @@
       0, Math.PI * 4, 0, Math.PI * 2
     ]
 
-    /* 比例尺：将空间坐标和弧度相映射 */
+    /* 比例尺：将空间坐标和弧度相映射 , 方向最小值 对应最小角度 最大对应最大角度 中间任意一点都可以求到角度了*/
     const scalerX = ScaleLinear(minPosX, minAngX, maxPosX, maxAngX)
     const scalerZ = ScaleLinear(minPosZ, minAngZ, maxPosZ, maxAngZ)
 
@@ -91,6 +91,7 @@
     /* 建立顶点集合 */
     function crtVertices(offset = 0) {
       const vertices = []
+      // 通过最大 最小值 往里 一个个顶点加
       for (let z = minPosZ; z < maxPosZ; z += 0.04) {
         for (let x = minPosX; x < maxPosX; x += 0.03) {
           vertices.push(x, 0, z)
@@ -104,11 +105,14 @@
       const { vertices } = wave
       for (let i = 0; i < vertices.length; i += 3) {
         const [posX, posZ] = [vertices[i], vertices[i + 2]]
-        const angZ = scalerZ(posZ)
+        // 获得z位置对应的角度 因为想在z方向做波动
+        const angX = scalerX(posX)
         const Omega = 2
-        const a = Math.sin(angZ) * 0.1 + 0.03
-        const phi = scalerX(posX) + offset
-        vertices[i + 1] = SinFn(a, Omega, phi)(angZ)
+        // 幅度做波动
+        const a = Math.sin(angX) * 0.1 + 0.03
+        const phi = scalerZ(posZ) + offset
+        // 给y方向 从 0 往上一个值 是一个sin 波的感觉
+        vertices[i + 1] = SinFn(a, Omega, phi)(angX)
       }
     }
 
