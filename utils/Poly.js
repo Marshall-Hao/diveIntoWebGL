@@ -8,6 +8,7 @@ const defAttr = () => ({
   size: 2,
   attrName: "a_Position",
   count: 0,
+  uniforms: {},
   types: ["POINTS"],
 });
 
@@ -45,6 +46,20 @@ export default class Poly {
         gl.program,
         "u_IsPOINTS"
       );
+    }
+    this.updateUniform();
+  }
+
+  updateUniform() {
+    const { gl, uniforms } = this;
+    for (let [key, val] of Object.entries(uniforms)) {
+      const { type, value } = val;
+      const u = gl.getUniformLocation(gl.program, key);
+      if (type.includes("Matrix")) {
+        gl[type](u, false, value);
+      } else {
+        gl[type](u, value);
+      }
     }
   }
 

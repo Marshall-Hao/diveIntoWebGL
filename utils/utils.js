@@ -71,3 +71,15 @@ export function glToCssPos({ x, y }, { width, height }) {
     y: -y * halfHeight,
   };
 }
+
+export function ScaleLinear(ax, ay, bx, by) {
+  const delta = {
+    x: bx - ax,
+    y: by - ay,
+  };
+  const k = delta.y / delta.x;
+  const b = ay - ax * k;
+  return function (x) {
+    return k * x + b;
+  };
+}
