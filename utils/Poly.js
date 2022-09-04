@@ -6,8 +6,18 @@ const defAttr = () => ({
   vertices: [],
   geoData: [],
   size: 2,
-  attrName: "a_Position",
+  attrName: "",
   count: 0,
+  // * 数据源
+  source: [],
+  // *  顶点数量，数据源尺寸
+  sourceSize: 0,
+  // * 元素字节数
+  elementBytes: 4,
+  // * 类目尺寸
+  categorySize: 0,
+  // * attribute属性集合
+  attributes: {},
   uniforms: {},
   types: ["POINTS"],
 });
@@ -23,23 +33,25 @@ export default class Poly {
     if (!gl) {
       return;
     }
-    const vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    this.updateBuffer();
-    const a_Position = gl.getAttribLocation(
-      gl.program,
-      attrName
-    );
-    // vertexAttribPointer将缓冲区对象分配给attribute 变量   size 是 数组中 几个为一个 组合 分配给顶点的位置
-    gl.vertexAttribPointer(
-      a_Position,
-      size,
-      gl.FLOAT,
-      false,
-      0,
-      0
-    );
-    gl.enableVertexAttribArray(a_Position);
+    if (attrName) {
+      const vertexBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+      this.updateBuffer();
+      const a_Position = gl.getAttribLocation(
+        gl.program,
+        attrName
+      );
+      // vertexAttribPointer将缓冲区对象分配给attribute 变量   size 是 数组中 几个为一个 组合 分配给顶点的位置
+      gl.vertexAttribPointer(
+        a_Position,
+        size,
+        gl.FLOAT,
+        false,
+        0,
+        0
+      );
+      gl.enableVertexAttribArray(a_Position);
+    }
 
     if (circleDot) {
       this.u_IsPOINTS = gl.getUniformLocation(
@@ -47,7 +59,47 @@ export default class Poly {
         "u_IsPOINTS"
       );
     }
+    this.calculateSourceSize();
+    this.updateAttribute();
     this.updateUniform();
+  }
+
+  calculateSourceSize() {
+    const { attributes, elementBytes, source } = this;
+    let categorySize = 0;
+    Object.values(attributes).forEach((ele) => {
+      const { size, index } = ele;
+      categorySize += size;
+      ele.byteIndex = index * elementBytes;
+    });
+    this.categorySize = categorySize;
+    this.categoryBytes = categorySize * elementBytes;
+    this.sourceSize = source.length / categorySize;
+  }
+
+  updateAttribute() {
+    const { gl, attributes, categoryBytes, source } = this;
+    const sourceBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, sourceBuffer);
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array(source),
+      gl.STATIC_DRAW
+    );
+    for (let [key, { size, byteIndex }] of Object.entries(
+      attributes
+    )) {
+      const attr = gl.getAttribLocation(gl.program, key);
+      gl.vertexAttribPointer(
+        attr,
+        size,
+        gl.FLOAT,
+        false,
+        categoryBytes,
+        byteIndex
+      );
+      gl.enableVertexAttribArray(attr);
+    }
   }
 
   updateUniform() {
@@ -105,12 +157,13 @@ export default class Poly {
     this.vertices = vertices;
   }
   draw(types = this.types) {
-    const { circleDot, gl, count, u_IsPOINTS } = this;
+    const { circleDot, gl, count, u_IsPOINTS, sourceSize } =
+      this;
     for (let type of types) {
       // * 点就 画圆 线就正常画
       circleDot &&
         gl.uniform1f(u_IsPOINTS, type === "POINTS");
-      gl.drawArrays(gl[type], 0, count);
+      gl.drawArrays(gl[type], 0, sourceSize || count);
     }
   }
 }

@@ -83,3 +83,16 @@ export function ScaleLinear(ax, ay, bx, by) {
     return k * x + b;
   };
 }
+
+export function SinFn(a, Omega, phi) {
+  return function (x) {
+    return a * Math.sin(Omega * x + phi);
+  };
+}
+
+export function GetIndexInGrid(w, size) {
+  return function (x, y) {
+    console.log(x, y);
+    return (y * w + x) * size;
+  };
+}
